@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller (build_exe.bat)
+build/
+dist/
+*.spec
+
+# Diagnostics and logs (written to %APPDATA%\HaloBattery, but just in case)
+*.log
+diagnostics.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Generated exe icon (tools/make_icon.py)
+halo.ico
+
+# release notes extracted by the workflow
+release_notes.md
+
+# Generated version resource (tools/make_version.py)
+version_info.txt
+
+# Local packaged builds (keep source repositories small)
+_internal/
+*.exe
+*.zip
+HaloBattery-1.13.0-*/
