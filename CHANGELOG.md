@@ -18,8 +18,8 @@ and the project follows [Semantic Versioning](https://semver.org/).
   use the existing keyboard tray pictogram instead of falling back to the mouse pictogram.
 - A standalone `HaloBattery-Diagnostics.exe` that friends can double-click to collect a
   complete report in Notepad without installing Python or the tray application.
-- Versioned GitHub Release artifacts, SHA-256 checksums and GitHub build-provenance
-  attestations. The custom build now checks this repository for updates.
+- Versioned GitHub Release artifacts and SHA-256 checksums. The custom build now checks
+  this repository for updates.
 
 ## [1.13.0] - 2026-09-29
 

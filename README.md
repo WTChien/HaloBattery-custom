@@ -159,30 +159,6 @@ writes `%APPDATA%\HaloBattery\diagnostics.txt`, and opens the complete report in
 
 Settings, the log and the diagnostics report live in `%APPDATA%\HaloBattery`.
 
-## Code signing policy
-
-Official builds are published only from this repository's
-[GitHub Releases](https://github.com/WTChien/HaloBattery-custom/releases). Release files
-are built on GitHub-hosted runners from a version tag, accompanied by SHA-256 checksums
-and a GitHub build-provenance attestation. Windows Authenticode signing through SignPath
-Foundation is planned; builds remain unsigned until the open-source signing application
-is approved and the release workflow is connected to the issued signing policy.
-
-- Committer and reviewer: [WTChien](https://github.com/WTChien)
-- Release and signing approver: [WTChien](https://github.com/WTChien)
-- Signing provider after approval: Free code signing provided by
-  [SignPath.io](https://signpath.io/), certificate by
-  [SignPath Foundation](https://signpath.org/).
-
-### Privacy
-
-Halo Battery reads HID and Bluetooth device information locally. Diagnostics and logs
-stay on the computer unless the user chooses to share them. When **Check for updates** is
-enabled, the application sends one HTTPS request per day to GitHub's public releases API;
-standard connection metadata and the `HaloBattery/<version>` user-agent are visible to
-GitHub, but device details and battery levels are not sent. No updates are downloaded or
-installed automatically.
-
 ## Credits
 
 - WLmouse protocol: @len0c ([incconutwo/mouse-battery-tray](https://github.com/incconutwo/mouse-battery-tray), MIT).
