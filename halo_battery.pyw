@@ -19,6 +19,7 @@ Supported:
 
 Run:   pythonw halo_battery.pyw
 Debug: python halo_battery.pyw --probe
+Shareable diagnostics: python halo_battery.pyw --diagnostics
 """
 from __future__ import annotations
 
@@ -36,7 +37,7 @@ from typing import Dict, List, Optional, Set
 
 APP_NAME = "HaloBattery"
 APP_TITLE = "Halo Battery"
-VERSION = "1.13.0"
+VERSION = "1.13.1"
 LEGACY_NAME = "BatteryTray"      # the app's previous name (settings and autostart are migrated)
 
 if getattr(sys, "frozen", False):
@@ -1875,12 +1876,82 @@ def probe():
     print("\n".join(dump_hid()))
 
 
+def standalone_diagnostics():
+    """Write and open a one-shot report without starting the tray application.
+
+    This is also the entry point of HaloBattery-Diagnostics.exe.  Keep it
+    independent of App.__init__: a person helping with an unsupported device
+    should not need an existing config, tray icon, or long-running watcher.
+    """
+    started = time.time()
+    lines = [
+        "COPY EVERYTHING IN THIS FILE AND SEND IT TO THE DEVELOPER.",
+        "You may replace Bluetooth MAC addresses and serial numbers with xx.",
+        "",
+        f"{APP_TITLE} diagnostics v{VERSION}  {time.strftime('%Y-%m-%d %H:%M:%S')}",
+        f"Python {sys.version.split()[0]}  {sys.platform}",
+        "",
+        "=== Poll result ===",
+    ]
+    results: List[DeviceStatus] = []
+    details: List[str] = []
+    providers = make_providers() + [BluetoothProvider()]
+    cfg = load_config()
+    for provider in providers:
+        try:
+            if isinstance(provider, PlayStationProvider):
+                provider.switch_bluetooth = bool(cfg.get("playstation_full_mode", False))
+            results += provider.poll()
+        except Exception as e:
+            log.exception("standalone diagnostics: %s", provider.name)
+            details.append(f"[{provider.name}] poll failed: {type(e).__name__}: {e}")
+        try:
+            details += provider.diagnostics()
+        except Exception as e:
+            details.append(f"[{provider.name}] diagnostics failed: {type(e).__name__}: {e}")
+
+    lines += [describe(s) + f"   [{s.key}]" for s in results] or ["(nothing)"]
+    lines += [
+        "",
+        "=== Protocol details ===",
+        *details,
+        "",
+        "=== All HID devices ===",
+        *dump_hid(),
+        "",
+        f"Scan finished in {time.time() - started:.1f} seconds.",
+    ]
+    text = "\n".join(lines)
+    try:
+        with open(DIAG_PATH, "w", encoding="utf-8") as f:
+            f.write(text)
+        if sys.platform == "win32":
+            os.startfile(DIAG_PATH)  # type: ignore[attr-defined]
+    except OSError as e:
+        log.exception("standalone diagnostics report")
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                ctypes.windll.user32.MessageBoxW(
+                    None, f"Could not create the diagnostics report:\n{e}",
+                    "Halo Battery Diagnostics", 0x10)
+            except Exception:
+                pass
+    return text
+
+
 def main():
     # before any window exists: without it Windows draws the app at 100 % and
     # stretches it on a scaled screen, which made the menu text small and blurry
     flyout.enable_dpi_awareness()
     if "--probe" in sys.argv:
         probe()
+        return
+    # The second condition lets the separately packaged, double-clickable
+    # HaloBattery-Diagnostics.exe work without a command-line argument.
+    if ("--diagnostics" in sys.argv or
+            "diagnostic" in os.path.basename(sys.executable).lower()):
+        standalone_diagnostics()
         return
     if not single_instance():
         return

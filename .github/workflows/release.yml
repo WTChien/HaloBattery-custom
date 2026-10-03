@@ -1,9 +1,9 @@
 name: Build and release
 
 # Push a tag like v1.8.0 and GitHub builds Halo Battery on a Windows runner and
-# attaches HaloBattery-<version>.zip (a HaloBattery folder with HaloBattery.exe
-# and its libraries) to the release for that tag (the release is created if it
-# does not exist yet). The release text is the matching section of CHANGELOG.md.
+# attaches the application ZIP, the standalone diagnostics tool and SHA-256
+# checksums to the release for that tag (the release is created if it does not
+# exist yet). The release text is the matching section of CHANGELOG.md.
 # "Run workflow" on the Actions tab builds it without releasing; download it
 # from the run's artifacts.
 #
@@ -18,6 +18,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -56,23 +58,46 @@ jobs:
           python tools/make_icon.py halo.ico
           python tools/make_version.py version_info.txt
           python -m PyInstaller --noconfirm --onedir --windowed --noupx --name HaloBattery --icon halo.ico --version-file version_info.txt --hidden-import hid --hidden-import pystray._win32 halo_battery.pyw
+          python -m PyInstaller --noconfirm --onefile --windowed --noupx --name HaloBattery-Diagnostics --icon halo.ico --version-file version_info.txt --hidden-import hid --hidden-import pystray._win32 halo_battery.pyw
 
-      - name: Zip the HaloBattery folder
-        id: zip
+      - name: Create versioned release files and checksums
+        id: files
         shell: pwsh
         run: |
           $m = Select-String -Path halo_battery.pyw -Pattern '^VERSION = "(.+)"'
           $ver = $m.Matches[0].Groups[1].Value
           $zip = "HaloBattery-$ver.zip"
+          $diag = "HaloBattery-Diagnostics-$ver.exe"
           Compress-Archive -Path dist/HaloBattery -DestinationPath $zip
+          Copy-Item dist/HaloBattery-Diagnostics.exe $diag
+          Get-FileHash -Algorithm SHA256 $zip, $diag |
+            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content -Encoding ascii SHA256SUMS.txt
           "zip=$zip" >> $env:GITHUB_OUTPUT
-          Write-Host "Built $zip"
+          "diag=$diag" >> $env:GITHUB_OUTPUT
+          Write-Host "Built $zip and $diag"
+          Get-Content SHA256SUMS.txt
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:
           name: HaloBattery
-          path: dist/HaloBattery
+          path: |
+            ${{ steps.files.outputs.zip }}
+            ${{ steps.files.outputs.diag }}
+            SHA256SUMS.txt
+
+      # This is a cryptographic statement that the files came from this exact
+      # repository, commit and workflow. It complements, but does not replace,
+      # Windows Authenticode. Authenticode will be connected after SignPath
+      # Foundation approves the project's OSS signing application.
+      - name: Attest release provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            ${{ steps.files.outputs.zip }}
+            ${{ steps.files.outputs.diag }}
+            SHA256SUMS.txt
 
       - name: Release notes from CHANGELOG.md
         if: github.ref_type == 'tag'
@@ -83,6 +108,9 @@ jobs:
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v3
         with:
-          files: ${{ steps.zip.outputs.zip }}
+          files: |
+            ${{ steps.files.outputs.zip }}
+            ${{ steps.files.outputs.diag }}
+            SHA256SUMS.txt
           fail_on_unmatched_files: true
           body_path: release_notes.md

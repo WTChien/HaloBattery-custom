@@ -153,7 +153,35 @@ Right-click a device icon to open its menu. It looks like a Windows 11 menu (acr
 3. Run `probe.bat` or choose **Diagnostics…** from the tray menu. The report lists every HID device and the raw protocol replies. Attach it to an issue in this repository to get a new device supported. The report contains Bluetooth MAC addresses and device serial numbers; you may want to redact them before posting. [CONTRIBUTING.md](CONTRIBUTING.md) tells you what to attach, how to record a USB capture for a device that is not supported yet, and how to open a pull request.
 4. **"python312.dll was not found"**, or **Start with Windows** says the app runs from a temporary folder: the app was started straight from the ZIP, or only `HaloBattery.exe` was copied out of it. Extract the whole ZIP to a folder of its own (the `_internal` folder must stay next to the .exe) and run `HaloBattery.exe` from there.
 
+For someone who does not have Halo Battery installed, send them the single-file
+`HaloBattery-Diagnostics.exe` made by `build_exe.bat`. Double-clicking it scans once,
+writes `%APPDATA%\HaloBattery\diagnostics.txt`, and opens the complete report in Notepad.
+
 Settings, the log and the diagnostics report live in `%APPDATA%\HaloBattery`.
+
+## Code signing policy
+
+Official builds are published only from this repository's
+[GitHub Releases](https://github.com/WTChien/HaloBattery-custom/releases). Release files
+are built on GitHub-hosted runners from a version tag, accompanied by SHA-256 checksums
+and a GitHub build-provenance attestation. Windows Authenticode signing through SignPath
+Foundation is planned; builds remain unsigned until the open-source signing application
+is approved and the release workflow is connected to the issued signing policy.
+
+- Committer and reviewer: [WTChien](https://github.com/WTChien)
+- Release and signing approver: [WTChien](https://github.com/WTChien)
+- Signing provider after approval: Free code signing provided by
+  [SignPath.io](https://signpath.io/), certificate by
+  [SignPath Foundation](https://signpath.org/).
+
+### Privacy
+
+Halo Battery reads HID and Bluetooth device information locally. Diagnostics and logs
+stay on the computer unless the user chooses to share them. When **Check for updates** is
+enabled, the application sends one HTTPS request per day to GitHub's public releases API;
+standard connection metadata and the `HaloBattery/<version>` user-agent are visible to
+GitHub, but device details and battery levels are not sent. No updates are downloaded or
+installed automatically.
 
 ## Credits
 

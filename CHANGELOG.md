@@ -6,6 +6,8 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.13.1] - 2026-10-03
+
 ### Added
 - MCHOSE K7 V2 Ultra+ battery level over its 2.4 GHz receiver (`3837:1018`), using the
   web driver's read-only QHW `0x0904` exchange. Confirmed on hardware at 99%, matching
@@ -14,6 +16,10 @@ and the project follows [Semantic Versioning](https://semver.org/).
   (`1532:027B`) and USB cable (`1532:0277`). The wireless path was confirmed on hardware
   at 96%, consistent with Synapse's 97% reading shortly beforehand. Razer keyboards now
   use the existing keyboard tray pictogram instead of falling back to the mouse pictogram.
+- A standalone `HaloBattery-Diagnostics.exe` that friends can double-click to collect a
+  complete report in Notepad without installing Python or the tray application.
+- Versioned GitHub Release artifacts, SHA-256 checksums and GitHub build-provenance
+  attestations. The custom build now checks this repository for updates.
 
 ## [1.13.0] - 2026-09-29
 
@@ -788,7 +794,8 @@ First public release.
   in or unplugged.
 - Settings and the autostart entry are migrated from the app's earlier name, Battery Tray.
 
-[Unreleased]: ../../compare/v1.13.0...HEAD
+[Unreleased]: ../../compare/v1.13.1...HEAD
+[1.13.1]: ../../compare/v1.13.0...v1.13.1
 [1.13.0]: ../../compare/v1.12.0...v1.13.0
 [1.12.0]: ../../compare/v1.11.0...v1.12.0
 [1.11.0]: ../../compare/v1.10.1...v1.11.0

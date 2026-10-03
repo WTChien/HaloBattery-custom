@@ -13,7 +13,7 @@ import re
 import urllib.request
 from typing import Optional, Tuple
 
-REPO = "HeyOkay/HaloBattery"
+REPO = "WTChien/HaloBattery-custom"
 API_URL = f"https://api.github.com/repos/{REPO}/releases/latest"
 RELEASES_URL = f"https://github.com/{REPO}/releases/latest"
 CHECK_EVERY = 24 * 3600          # seconds between checks
