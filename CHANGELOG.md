@@ -6,6 +6,14 @@ and the project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.13.2] - 2026-10-03
+
+### Added
+- Razer Viper V3 Pro SE battery level and charging state over its 2.4 GHz receiver
+  (`1532:00DF`) and USB cable (`1532:00DE`), using the hardware-tested OpenRazer
+  exchange. Razer Ornata V3 (`1532:02A1`) is recognized as a wired keyboard without
+  a battery and remains intentionally hidden.
+
 ## [1.13.1] - 2026-10-03
 
 ### Added
@@ -794,7 +802,8 @@ First public release.
   in or unplugged.
 - Settings and the autostart entry are migrated from the app's earlier name, Battery Tray.
 
-[Unreleased]: ../../compare/v1.13.1...HEAD
+[Unreleased]: ../../compare/v1.13.2...HEAD
+[1.13.2]: ../../compare/v1.13.1...v1.13.2
 [1.13.1]: ../../compare/v1.13.0...v1.13.1
 [1.13.0]: ../../compare/v1.12.0...v1.13.0
 [1.12.0]: ../../compare/v1.11.0...v1.12.0

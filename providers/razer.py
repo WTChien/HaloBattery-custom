@@ -105,6 +105,10 @@ KNOWN = {
     0x00D4: ("Razer Basilisk Mobile", 0x1F),
     0x00D6: ("Razer Basilisk V3 Pro 35K Phantom Green", 0x1F),
     0x00D7: ("Razer Basilisk V3 Pro 35K Phantom Green", 0x1F),
+    # Viper V3 Pro SE: OpenRazer PR #2886, confirmed on both PIDs with the
+    # standard battery / charging exchange and transaction id 0x1F.
+    0x00DE: ("Razer Viper V3 Pro SE", 0x1F),
+    0x00DF: ("Razer Viper V3 Pro SE", 0x1F),
 
     # Keyboards with a battery. OpenRazer's RazerBlackWidowV3ProWired (0x025A) lists
     # get_battery/is_charging, and the wireless model (0x025C) inherits that class.
@@ -124,6 +128,10 @@ TRANSACTION_IDS = (0x1F, 0x3F, 0xFF, 0x9F, 0x08)
 
 # These use the standard Razer battery exchange but need the keyboard pictogram.
 KEYBOARD_PIDS = frozenset((0x025A, 0x025C, 0x0277, 0x027B))
+
+# Recognized for a clearer diagnostics message only. These devices have no
+# battery, so they must never be polled or given a tray icon.
+WIRED_NO_BATTERY = frozenset((0x02A1,))  # Razer Ornata V3
 
 # Devices that are not in KNOWN are only polled when their name suggests a
 # battery: some wired Razer devices (e.g. the Huntsman V2 keyboard) answer the
@@ -348,7 +356,10 @@ class RazerProvider(Provider):
             diag_from = len(self._diag)
             self._diag.append(f"[Razer] {name} pid={pid:04x}, interfaces: {len(ifaces)}")
             if not maybe_wireless(pid, name):
-                self._diag.append("  skipped: not a known wireless device")
+                if pid in WIRED_NO_BATTERY:
+                    self._diag.append("  skipped: known wired device with no battery")
+                else:
+                    self._diag.append("  skipped: not a known wireless device")
                 continue
             if pid == 0x053A:
                 # The Barracuda Pro's receiver does not answer the mouse request this

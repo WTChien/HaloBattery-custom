@@ -158,6 +158,17 @@ The standard Razer 90-byte feature report, as used by Synapse and OpenRazer: pow
 
 Same mice protocol: transaction id 0x1F, command class 0x07, command 0x80 answers `02 1f 00 00 00 02 07 80 00 ab`, and raw 0xAB = 171/255 = 67%, stable across polls and unchanged while Synapse runs. Idle, the mouse answers status 04 and keeps its last level on a greyed icon
 
+### Razer Viper V3 Pro SE
+
+**Connection:** 2.4 GHz receiver (1532:00DF), USB cable (1532:00DE)
+
+The standard Razer 90-byte feature reports: transaction id `0x1F`, power class
+`0x07`, command `0x80` for the 0-255 battery level and `0x84` for charging. Both
+product ids and both battery operations were confirmed on physical hardware in
+[OpenRazer PR #2886](https://github.com/openrazer/openrazer/pull/2886). The product
+id came independently from a Halo Battery diagnostics report. **Unverified in Halo
+Battery** until the reporter confirms the first build on the friend's mouse.
+
 ### Razer wireless mice (other OpenRazer models)
 
 **Connection:** 2.4 GHz receiver or USB cable

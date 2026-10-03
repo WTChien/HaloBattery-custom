@@ -3,8 +3,9 @@
 The table must agree with OpenRazer, the Linux driver that reads the battery of
 these mice. OPENRAZER_CHARGE_LEVEL below is a copy of the PID -> transaction id
 list in OpenRazer's razer_attr_read_charge_level() (driver/razermouse_driver.c,
-commit 6820f9da16). The poll tests replace the HID layer with a fake mouse that
-answers the 90-byte feature report the way the provider expects.
+commit 6820f9da16), plus the Viper V3 Pro SE pair from OpenRazer PR #2886. The
+poll tests replace the HID layer with a fake mouse that answers the 90-byte
+feature report the way the provider expects.
 
 Run from the repository root:
 
@@ -86,6 +87,8 @@ OPENRAZER_CHARGE_LEVEL = {
     0x00D4: 0x1F,   # BASILISK_MOBILE_RECEIVER
     0x00D6: 0x1F,   # BASILISK_V3_PRO_35K_PHANTOM_GREEN_EDITION_WIRED
     0x00D7: 0x1F,   # BASILISK_V3_PRO_35K_PHANTOM_GREEN_EDITION_WIRELESS
+    0x00DE: 0x1F,   # VIPER_V3_PRO_SE_WIRED (OpenRazer PR #2886)
+    0x00DF: 0x1F,   # VIPER_V3_PRO_SE_WIRELESS (OpenRazer PR #2886)
 }
 
 # In OpenRazer's list, but not in the app's table on purpose (see providers/razer.py).
@@ -185,6 +188,15 @@ class PollTest(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertEqual((out[0].level, out[0].kind), (96, "keyboard"))
 
+    def test_viper_v3_pro_se_wireless_uses_the_confirmed_exchange(self):
+        e = entry(0x00DF, b"viper-se", "Razer Viper V3 Pro SE", iface=0)
+        mouse = FakeMouse(tid=0x1F, raw_level=0xCC, charging=0)
+        out = self.poll([e], {b"viper-se": mouse})
+        self.assertEqual(len(out), 1)
+        self.assertEqual((out[0].name, out[0].level),
+                         ("Razer Viper V3 Pro SE", round(0xCC / 255 * 100)))
+        self.assertEqual(mouse.tids[0], 0x1F)
+
 
 # ------------------------------------------------------------------ tests
 class TableTest(unittest.TestCase):
@@ -226,6 +238,15 @@ class TableTest(unittest.TestCase):
         # The wireless exchange was also confirmed on the reporter's real 0x027B unit.
         self.assertEqual(R.KNOWN[0x0277], ("Razer Pro Type Ultra", 0x1F))
         self.assertEqual(R.KNOWN[0x027B], ("Razer Pro Type Ultra", 0x9F))
+
+    def test_the_viper_v3_pro_se_pair_is_known(self):
+        self.assertEqual(R.KNOWN[0x00DE], ("Razer Viper V3 Pro SE", 0x1F))
+        self.assertEqual(R.KNOWN[0x00DF], ("Razer Viper V3 Pro SE", 0x1F))
+
+    def test_ornata_v3_is_known_to_have_no_battery(self):
+        self.assertIn(0x02A1, R.WIRED_NO_BATTERY)
+        self.assertNotIn(0x02A1, R.KNOWN)
+        self.assertFalse(R.maybe_wireless(0x02A1, "Razer Ornata V3"))
 
     def test_wired_viper_is_not_in_the_table(self):
         # 0078 is OpenRazer's USB_DEVICE_ID_RAZER_VIPER, a wired mouse with no battery.
